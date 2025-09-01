@@ -1,0 +1,18 @@
+@model IEnumerable<SES.Models.Enrollment>
+    <h2>Enrollments</h2>
+    <p><a asp-action="Create">New Enrollment</a></p>
+    <table class="table">
+        <thead><tr><th>Student</th><th>Course</th><th>Grade</th><th>Enrolled</th><th></th></tr></thead>
+        <tbody>
+            @foreach (var e in Model)
+{
+            <tr>
+                <td>@e.Student.LastName, @e.Student.FirstName</td>
+                <td>@e.Course.Title (@e.Course.Credits cr)</td>
+                <td>@e.Grade</td>
+                <td>@(e.Grade.HasValue ? e.Grade.Value.ToString("0.0") : "-")</td>
+                <td><a asp-action="Grade" asp-route-id="@e.Id">Grade</a></td>
+            </tr>
+}
+        </tbody>
+    </table>

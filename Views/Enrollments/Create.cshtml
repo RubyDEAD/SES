@@ -1,0 +1,15 @@
+@model SES.Models.ViewModels.EnrollStudentVm
+<h2>Enroll Student</h2>
+<form asp-action="Create" method="post">
+    <div class="mb-3">
+        <label asp-for="StudentId" class="form-label">Student</label>
+        <select asp-for="StudentId" class="form-select" asp-items="Model.Students"></select>
+        <span asp-validation-for="StudentId" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="CourseId" class="form-label">Course</label>
+        <select asp-for="CourseId" class="form-select" asp-items="Model.Courses"></select>
+        <span asp-validation-for="CourseId" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Enroll</button>
+</form>
