@@ -7,7 +7,7 @@
 {
             <tr>
                 <td>@s.LastName, @s.FirstName</td>
-                <td>@s.EnrollmentDate.ToShortDateString()</td>
+                <td>@s.DateCreated.ToShortDateString()</td>
                 <td>@s.Enrollments.Count</td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@s.Id">Edit</a> |

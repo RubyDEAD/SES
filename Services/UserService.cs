@@ -20,6 +20,15 @@ namespace SES.Services
 
             var exists = await _db.Users.AnyAsync(u => u.Email == email);
             if (exists) return (false, "Email already registered.");
+            
+            var student = new Student {
+            FirstName = firstName.Trim(), 
+            LastName = lastName.Trim(), 
+            DateCreated = DateTime.Now
+            };
+
+            _db.Students.Add(student);
+            await _db.SaveChangesAsync();
 
             var user = new User
             {
@@ -33,6 +42,8 @@ namespace SES.Services
 
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
+
+            
             return (true, null);
         }
 

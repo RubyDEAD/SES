@@ -1,6 +1,7 @@
 // Models/Course.cs
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SES.Models
 {
@@ -18,5 +19,13 @@ namespace SES.Models
         public string? Department { get; set; }
 
         public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+
+
+        [Range(1, 100)]
+        public int MaxEnrollies { get; set;} = 20;
+
+        [NotMapped]
+        public int CurrentEnrollies => Enrollments?.Count ?? 0;
+
     }
 }

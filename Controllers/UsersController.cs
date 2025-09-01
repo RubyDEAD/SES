@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using SES.Models;
 using SES.Models.ViewModels;
 using SES.Services;
 
@@ -44,7 +45,6 @@ public async Task<IActionResult> Register(RegisterVm vm)
         return View(vm);
     }
 
-    
     return RedirectToAction(nameof(Login));
 }
 

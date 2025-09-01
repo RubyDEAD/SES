@@ -24,6 +24,7 @@ namespace SES.Data
             {
                 b.Property(p => p.FirstName).IsRequired().HasMaxLength(40);
                 b.Property(p => p.LastName).IsRequired().HasMaxLength(40);
+                
             });
 
             // Course
@@ -31,6 +32,7 @@ namespace SES.Data
             {
                 b.Property(p => p.Title).IsRequired().HasMaxLength(80);
                 b.Property(p => p.Credits).IsRequired();
+                b.Property(p => p.MaxEnrollies).IsRequired();
             });
 
             // Enrollment (use generic overload to avoid design-time cast issues)
@@ -59,17 +61,12 @@ namespace SES.Data
                 b.Property(u => u.LastName).IsRequired().HasMaxLength(40);
                 b.Property(u => u.PasswordHash).IsRequired();
 
-                // Optional 1–1 link to Student (nullable FK)
-                // EF makes the FK indexed and unique for WithOne by default when configured as 1–1.
                 b.HasOne(u => u.Student)
                  .WithOne()
                  .HasForeignKey<User>(u => u.StudentId)
                  .OnDelete(DeleteBehavior.Restrict);
 
-                // Do NOT force a unique index yourself if targeting SQLite,
-                // because multiple NULLs are allowed and EF/Core providers handle filtered uniqueness differently.
-                // If you need to guarantee only one non-null StudentId per user, the 1–1 above already enforces it.
-                // If you want to ensure a student cannot be linked to multiple users, keep this as-is.
+            
             });
         }
 

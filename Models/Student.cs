@@ -16,7 +16,7 @@ namespace SES.Models
         public string LastName { get; set; } = string.Empty;
 
         [DataType(DataType.Date)]
-        public DateTime EnrollmentDate { get; set; } = DateTime.UtcNow;
+        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 
         public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
     }
