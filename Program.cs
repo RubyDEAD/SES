@@ -1,9 +1,16 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using SES.Data;
 using SES.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Users/Login";
+    });
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<SchoolContext>(opt =>

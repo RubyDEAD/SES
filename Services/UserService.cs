@@ -35,7 +35,8 @@ namespace SES.Services
                 Email = email.Trim(),
                 FirstName = firstName?.Trim() ?? string.Empty,
                 LastName = lastName?.Trim() ?? string.Empty,
-                Role = UserRole.Student
+                Role = UserRole.Student,
+                StudentId = student.Id
             };
 
             user.PasswordHash = _hasher.HashPassword(user, password);

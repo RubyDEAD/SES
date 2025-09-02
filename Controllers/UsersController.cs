@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using SES.Models;
 using SES.Models.ViewModels;
 using SES.Services;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 public class UsersController : Controller
 {
@@ -24,28 +27,37 @@ public class UsersController : Controller
             return View(vm);
         }
 
-        // TODO: sign-in (create auth cookie/claims). For now just redirect:
-        return Redirect(returnUrl ?? Url.Action("Index", "Students")!);
+        // Sign-in with claims
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim("StudentId", user.StudentId?.ToString() ?? ""),
+            new Claim(ClaimTypes.Role, user.Role.ToString())
+        };
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var principal = new ClaimsPrincipal(identity);
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+        return RedirectToAction("Profile", "Students", new { id = user.StudentId });
     }
 
-    // Controllers/UsersController.cs (add to your existing controller)
-[HttpGet]
-public IActionResult Register() => View(new RegisterVm());
+    [HttpGet]
+    public IActionResult Register() => View(new RegisterVm());
 
-[HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> Register(RegisterVm vm)
-{
-    if (!ModelState.IsValid) return View(vm);
-
-    var (ok, error) = await _users.RegisterAsync(vm.Email, vm.FirstName, vm.LastName, vm.Password);
-    if (!ok)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Register(RegisterVm vm)
     {
-        ModelState.AddModelError(string.Empty, error ?? "Registration failed.");
-        return View(vm);
+        if (!ModelState.IsValid) return View(vm);
+
+        var (ok, error) = await _users.RegisterAsync(vm.Email, vm.FirstName, vm.LastName, vm.Password);
+        if (!ok)
+        {
+            ModelState.AddModelError(string.Empty, error ?? "Registration failed.");
+            return View(vm);
+        }
+
+        return RedirectToAction(nameof(Login));
     }
-
-    return RedirectToAction(nameof(Login));
-}
-
 }
