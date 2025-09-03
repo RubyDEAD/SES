@@ -1,18 +1,150 @@
-@model IEnumerable<SES.Models.Enrollment>
-    <h2>Enrollments</h2>
-    <p><a asp-action="Create">New Enrollment</a></p>
-    <table class="table">
-        <thead><tr><th>Student</th><th>Course</th><th>Grade</th><th>Enrolled</th><th></th></tr></thead>
-        <tbody>
-            @foreach (var e in Model)
-{
-            <tr>
+@model SES.Models.ViewModels.EnrollmentIndexVm
+
+<h2>Enrollments</h2>
+<table class="table">
+    <thead>
+        <tr><th>Student</th><th>Course</th><th>Grade</th><th>Enrolled</th><th></th></tr>
+    </thead>
+    <tbody>
+        @foreach (var e in Model.Enrollments)
+        {
+            <tr data-enrollment-id="@e.Id">
                 <td>@e.Student.LastName, @e.Student.FirstName</td>
                 <td>@e.Course.Title (@e.Course.Credits cr)</td>
-                <td>@e.Grade</td>
                 <td>@(e.Grade.HasValue ? e.Grade.Value.ToString("0.0") : "-")</td>
-                <td><a asp-action="Grade" asp-route-id="@e.Id">Grade</a></td>
+                <td>@e.EnrolledOn.ToShortDateString()</td>
+                <td>
+                    <a asp-action="Grade" asp-route-id="@e.Id" class="btn btn-sm btn-secondary">Grade</a>
+                    @if (!e.Grade.HasValue)
+                    {
+                        <button class="btn btn-sm btn-danger unenroll-btn" 
+                                data-course-id="@e.Course.Id" 
+                                data-course-title="@e.Course.Title">
+                            Unenroll
+                        </button>
+                    }
+                </td>
             </tr>
+        }
+    </tbody>
+</table>
+
+<h3>Available Courses for Enrollment</h3>
+<table class="table" id="coursesTable">
+    <thead>
+        <tr><th>Title</th><th>Credits</th><th>Enrollment</th><th></th></tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model.AvailableCourses)
+        {
+            <tr data-course-id="@c.CourseId">
+                <td>@c.Title</td>
+                <td>@c.Credits</td>
+                <td>@c.EnrolledCount / @c.MaxStudents</td>
+                <td>
+                    <button class="btn btn-primary enroll-btn" 
+                            data-course-id="@c.CourseId"
+                            @(c.EnrolledCount >= c.MaxStudents ? "disabled" : "")>
+                        @(c.EnrolledCount >= c.MaxStudents ? "Full" : "Enroll")
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Hidden form to generate antiforgery token -->
+<form method="post" asp-antiforgery="true" style="display:none">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+<script>
+(function () {
+    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+    const token = tokenInput ? tokenInput.value : null;
+
+    // Enroll functionality
+    document.querySelectorAll('.enroll-btn').forEach(btn => {
+        btn.addEventListener('click', async function () {
+            const courseIdStr = this.getAttribute('data-course-id');
+            const courseId = Number(courseIdStr);
+
+            if (!token) { 
+                alert('Missing anti-forgery token.'); 
+                return; 
+            }
+            if (!Number.isFinite(courseId)) { 
+                alert('Invalid course ID.'); 
+                return; 
+            }
+
+            try {
+                const response = await fetch('/Enrollments/Enroll', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({ courseId })
+                });
+
+                if (response.ok) {
+                    // Remove the course row from available courses table
+                    const row = document.querySelector(`#coursesTable tr[data-course-id="${courseIdStr}"]`);
+                    if (row) row.remove();
+                    // Optionally reload the page to show the new enrollment
+                    location.reload();
+                } else {
+                    const text = await response.text();
+                    alert(text || 'Enrollment failed.');
+                }
+            } catch {
+                alert('Network error.');
+            }
+        });
+    });
+
+    document.querySelectorAll('.unenroll-btn').forEach(btn => {
+        btn.addEventListener('click', async function () {
+            const courseIdStr = this.getAttribute('data-course-id');
+            const courseTitle = this.getAttribute('data-course-title');
+            const courseId = Number(courseIdStr);
+
+            if (!confirm(`Are you sure you want to unenroll from "${courseTitle}"?`)) {
+                return;
+            }
+
+            if (!token) { 
+                alert('Missing anti-forgery token.'); 
+                return; 
+            }
+            if (!Number.isFinite(courseId)) { 
+                alert('Invalid course ID.'); 
+                return; 
+            }
+
+            try {
+                const response = await fetch('/Enrollments/Unenroll', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({ courseId })
+                });
+
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    const text = await response.text();
+                    alert(text || 'Unenrollment failed.');
+                }
+            } catch {
+                alert('Network error.');
+            }
+        });
+    });
+})();
+</script>
 }
-        </tbody>
-    </table>

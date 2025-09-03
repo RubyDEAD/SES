@@ -4,87 +4,124 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SES.Data;
 using SES.Models;
+using SES.Models.ViewModels;
 
 namespace SES.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class CoursesController : Controller
     {
         private readonly SchoolContext _db;
 
         public CoursesController(SchoolContext db) => _db = db;
 
-        // Anyone can view courses
-        [AllowAnonymous]
-        public async Task<IActionResult> Index()
+        // Admin list + inline create form
+        public async Task<IActionResult> AdminIndex()
         {
-            var data = await _db.Courses
-                .Include(c => c.Enrollments).ThenInclude(e => e.Student)
+            var rows = await _db.Courses
+                .Select(c => new CourseRowVm
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    Credits = c.Credits,
+                    MaxStudents = c.MaxEnrollies,
+                    EnrolledCount = _db.Enrollments.Count(e => e.CourseId == c.Id)
+                })
                 .AsNoTracking()
                 .ToListAsync();
-            return View(data);
-        }
 
-        // Only Admin can access create
-        [Authorize(Roles = "Admin")]
-        public IActionResult Create() => View();
+            var vm = new CoursesAdminVm
+            {
+                Courses = rows,
+                NewCourse = new CourseEditVm()
+            };
+            return View(vm); // renders Views/Courses/AdminIndex.cshtml
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create(Course c)
+        public async Task<IActionResult> Create([Bind(Prefix = "NewCourse")] CourseEditVm vm)
         {
-            if (!ModelState.IsValid) return View(c);
-            _db.Add(c);
+            if (!ModelState.IsValid)
+            {
+                var rows = await _db.Courses
+                    .Select(c => new CourseRowVm
+                    {
+                        Id = c.Id,
+                        Title = c.Title,
+                        Credits = c.Credits,
+                        MaxStudents = c.MaxEnrollies,
+                        EnrolledCount = _db.Enrollments.Count(e => e.CourseId == c.Id)
+                    })
+                    .AsNoTracking()
+                    .ToListAsync();
+                return View("AdminIndex", new CoursesAdminVm { Courses = rows, NewCourse = vm });
+            }
+
+            _db.Courses.Add(new Course
+            {
+                Title = vm.Title,
+                Credits = vm.Credits,
+                MaxEnrollies = vm.MaxStudents
+            });
             await _db.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(AdminIndex));
         }
 
-        // Only Admin can edit
-        [Authorize(Roles = "Admin")]
+        [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
             var c = await _db.Courses.FindAsync(id);
             if (c == null) return NotFound();
-            return View(c);
+            var vm = new CourseEditVm
+            {
+                Id = c.Id,
+                Title = c.Title,
+                Credits = c.Credits,
+                MaxStudents = c.MaxEnrollies
+            };
+            return View(vm); // Views/Courses/Edit.cshtml expects CourseEditVm
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit(int id, Course c)
+        public async Task<IActionResult> Edit(int id, CourseEditVm vm)
         {
-            if (id != c.Id) return BadRequest();
-            if (!ModelState.IsValid) return View(c);
+            if (id != vm.Id) return BadRequest();
+            if (!ModelState.IsValid) return View(vm);
 
-            _db.Entry(c).State = EntityState.Modified;
-            await _db.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        // Only Admin can delete
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Delete(int id)
-        {
             var c = await _db.Courses.FindAsync(id);
             if (c == null) return NotFound();
-            return View(c);
+
+            c.Title = vm.Title;
+            c.Credits = vm.Credits;
+            c.MaxEnrollies = vm.MaxStudents;
+            await _db.SaveChangesAsync();
+            return RedirectToAction(nameof(AdminIndex));
         }
 
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             var c = await _db.Courses.FindAsync(id);
             if (c != null)
             {
-                _db.Courses.Remove(c);
-                await _db.SaveChangesAsync();
+                var hasEnrollments = await _db.Enrollments.AnyAsync(e => e.CourseId == id);
+                if (!hasEnrollments)
+                {
+                    _db.Courses.Remove(c);
+                    await _db.SaveChangesAsync();
+                }
+                else
+                {
+                    TempData["Error"] = "Cannot delete a course with active enrollments.";
+                }
             }
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(AdminIndex));
         }
 
-        // Helper: get current UserId if you later need row-level filtering
+        // Optional helper
         private int? GetCurrentUserId()
         {
             var id = User.FindFirstValue(ClaimTypes.NameIdentifier);

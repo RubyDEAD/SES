@@ -39,6 +39,10 @@ public class UsersController : Controller
         var principal = new ClaimsPrincipal(identity);
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
+        if (user.Role == UserRole.Admin)
+        {
+            return RedirectToAction("AdminIndex", "Courses");
+        }
         return RedirectToAction("Profile", "Students", new { id = user.StudentId });
     }
 

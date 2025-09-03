@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using SES.Data;
 using SES.Services;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -42,12 +41,30 @@ app.MapControllerRoute(
     pattern: "{controller=Users}/{action=Login}/{id?}");
 
 
-
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<SchoolContext>();
     db.Database.Migrate();
     DbSeeder.Seed(db);
+
+    if (!db.Users.Any(u => u.Email == "admin@ses.com"))
+    {
+        var hasher = new Microsoft.AspNetCore.Identity.PasswordHasher<SES.Models.User>();
+        var admin = new SES.Models.User
+        {
+            Email = "admin@ses.com",
+            FirstName = "Admin",
+            LastName = "User",
+            Role = SES.Models.UserRole.Admin,
+            PasswordHash = "" // will be set below
+        };
+        admin.PasswordHash = hasher.HashPassword(admin, "AdminPassword123"); // set your password here
+        db.Users.Add(admin);
+        db.SaveChanges();
+    }
 }
 
+
 app.Run();
+
+

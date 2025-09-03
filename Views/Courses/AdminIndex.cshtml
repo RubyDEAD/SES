@@ -1,0 +1,61 @@
+@model SES.Models.ViewModels.CoursesAdminVm
+
+<h2>Manage Courses</h2>
+
+<!-- Create Course Form -->
+<form asp-action="Create" method="post" class="mb-4">
+    @Html.AntiForgeryToken()
+    <div class="row g-2">
+        <div class="col">
+            <input asp-for="NewCourse.Title" class="form-control" placeholder="Course Title" required />
+            <span asp-validation-for="NewCourse.Title" class="text-danger"></span>
+        </div>
+        <div class="col">
+            <input asp-for="NewCourse.Credits" class="form-control" placeholder="Credits" type="number" min="1" required />
+            <span asp-validation-for="NewCourse.Credits" class="text-danger"></span>
+        </div>
+        <div class="col">
+            <input asp-for="NewCourse.MaxStudents" class="form-control" placeholder="Max Students" type="number" min="1" required />
+            <span asp-validation-for="NewCourse.MaxStudents" class="text-danger"></span>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-success">Add Course</button>
+        </div>
+    </div>
+</form>
+
+<!-- List of Courses -->
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Credits</th>
+            <th>Max Students</th>
+            <th>Enrolled</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var c in Model.Courses)
+    {
+        <tr>
+            <td>@c.Title</td>
+            <td>@c.Credits</td>
+            <td>@c.MaxStudents</td>
+            <td>@c.EnrolledCount</td>
+            <td class="text-end">
+                <a asp-action="Edit" asp-route-id="@c.Id" class="btn btn-primary btn-sm">Edit</a>
+                <form asp-action="Delete" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@c.Id" />
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this course?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

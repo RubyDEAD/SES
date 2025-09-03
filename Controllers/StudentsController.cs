@@ -39,7 +39,10 @@ public class StudentsController : Controller
                     CourseId = e.CourseId,
                     Title = e.Course.Title,
                     Credits = e.Course.Credits,
-                    Grade = e.Grade
+                    Grade = e.Grade,
+                    EnrolledOn = e.EnrolledOn, // Add this line
+                    MaxStudents = e.Course.MaxEnrollies,
+                    EnrolledCount = 0
                 })
                 .ToList()
         };
