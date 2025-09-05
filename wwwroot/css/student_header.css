@@ -1,0 +1,41 @@
+  .student-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-bottom: 3px solid #4c63d2;
+    }
+    .student-brand {
+        font-weight: 700;
+        font-size: 1.5rem;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    .student-nav-link {
+        font-weight: 500;
+        padding: 0.8rem 1.2rem !important;
+        margin: 0 0.2rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    .student-nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-1px);
+    }
+    .student-nav-link.active {
+        background-color: rgba(255, 255, 255, 0.2);
+        font-weight: 600;
+    }
+    .profile-badge {
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 25px;
+        padding: 0.4rem 1rem;
+        backdrop-filter: blur(10px);
+    }
+    .student-icon {
+        margin-right: 0.5rem;
+        font-size: 1.1rem;
+    }
+    @media (max-width: 768px) {
+        .student-brand { font-size: 1.2rem; }
+        .student-nav-link { padding: 0.6rem 1rem !important; }
+    }

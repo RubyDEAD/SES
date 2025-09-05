@@ -17,6 +17,7 @@ namespace SES.Models.ViewModels
         public string Title { get; set; } = string.Empty;
         public int Credits { get; set; }
         public float? Grade { get; set; }
+        public string Department { get; set; } = string.Empty;
         public DateTime EnrolledOn { get; set; } 
         public int EnrolledCount { get; set; }     
         public int MaxStudents { get; set; }       

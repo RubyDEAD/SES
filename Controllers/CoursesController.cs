@@ -15,7 +15,6 @@ namespace SES.Controllers
 
         public CoursesController(SchoolContext db) => _db = db;
 
-        // Admin list + inline create form
         public async Task<IActionResult> AdminIndex()
         {
             var rows = await _db.Courses
@@ -25,6 +24,7 @@ namespace SES.Controllers
                     Title = c.Title,
                     Credits = c.Credits,
                     MaxStudents = c.MaxEnrollies,
+                    Department = c.Department,
                     EnrolledCount = _db.Enrollments.Count(e => e.CourseId == c.Id)
                 })
                 .AsNoTracking()
@@ -35,7 +35,7 @@ namespace SES.Controllers
                 Courses = rows,
                 NewCourse = new CourseEditVm()
             };
-            return View(vm); // renders Views/Courses/AdminIndex.cshtml
+            return View(vm); 
         }
 
         [HttpPost]
@@ -51,6 +51,7 @@ namespace SES.Controllers
                         Title = c.Title,
                         Credits = c.Credits,
                         MaxStudents = c.MaxEnrollies,
+                        Department = c.Department,
                         EnrolledCount = _db.Enrollments.Count(e => e.CourseId == c.Id)
                     })
                     .AsNoTracking()
@@ -62,25 +63,11 @@ namespace SES.Controllers
             {
                 Title = vm.Title,
                 Credits = vm.Credits,
+                Department = vm.Department,
                 MaxEnrollies = vm.MaxStudents
             });
             await _db.SaveChangesAsync();
             return RedirectToAction(nameof(AdminIndex));
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> Edit(int id)
-        {
-            var c = await _db.Courses.FindAsync(id);
-            if (c == null) return NotFound();
-            var vm = new CourseEditVm
-            {
-                Id = c.Id,
-                Title = c.Title,
-                Credits = c.Credits,
-                MaxStudents = c.MaxEnrollies
-            };
-            return View(vm); // Views/Courses/Edit.cshtml expects CourseEditVm
         }
 
         [HttpPost]
@@ -88,13 +75,14 @@ namespace SES.Controllers
         public async Task<IActionResult> Edit(int id, CourseEditVm vm)
         {
             if (id != vm.Id) return BadRequest();
-            if (!ModelState.IsValid) return View(vm);
+            if (!ModelState.IsValid) return RedirectToAction(nameof(AdminIndex));
 
             var c = await _db.Courses.FindAsync(id);
             if (c == null) return NotFound();
 
             c.Title = vm.Title;
             c.Credits = vm.Credits;
+            c.Department = vm.Department;
             c.MaxEnrollies = vm.MaxStudents;
             await _db.SaveChangesAsync();
             return RedirectToAction(nameof(AdminIndex));
@@ -121,11 +109,52 @@ namespace SES.Controllers
             return RedirectToAction(nameof(AdminIndex));
         }
 
+        // NEW: View Students in a Course
+        [HttpGet]
+        public async Task<IActionResult> ViewStudents(int id)
+        {
+            var course = await _db.Courses
+                .Include(c => c.Enrollments)
+                .ThenInclude(e => e.Student)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (course == null) return NotFound();
+
+            var vm = new CourseStudentsVm
+            {
+                CourseId = course.Id,
+                CourseTitle = course.Title,
+                Students = course.Enrollments.Select(e => new StudentRowVm
+                {
+                    Id = e.Student.Id,
+                    Name = e.Student.FirstName + " " + e.Student.LastName
+                }).ToList() 
+            };
+
+            return View(vm); 
+        }
+
         // Optional helper
         private int? GetCurrentUserId()
         {
             var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
             return int.TryParse(id, out var uid) ? uid : null;
         }
-    }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveStudent(int courseId, int studentId)
+        {
+        var enrollment = await _db.Enrollments
+            .FirstOrDefaultAsync(e => e.CourseId == courseId && e.StudentId == studentId);
+
+        if (enrollment != null)
+        {
+        _db.Enrollments.Remove(enrollment);
+        await _db.SaveChangesAsync();
+        }
+
+        return RedirectToAction(nameof(ViewStudents), new { id = courseId });
+}
+        }
 }

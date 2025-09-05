@@ -1,0 +1,42 @@
+@model SES.Models.ViewModels.CourseStudentsVm
+
+<h2>Students in @Model.CourseTitle</h2>
+<p>Total: @Model.TotalStudents</p>
+
+@if (Model.Students.Any())
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var s in Model.Students)
+        {
+            <tr>
+                <td>@s.Id</td>
+                <td>@s.Name</td>
+                <td class="text-end">
+                    <form asp-action="RemoveStudent" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="courseId" value="@Model.CourseId" />
+                        <input type="hidden" name="studentId" value="@s.Id" />
+                        <button type="submit" class="btn btn-danger btn-sm"
+                                onclick="return confirm('Remove @s.Name from this course?')">
+                            Remove
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p><em>No students enrolled in this course.</em></p>
+}
+
+<a asp-action="AdminIndex" class="btn btn-secondary">Back to Courses</a>

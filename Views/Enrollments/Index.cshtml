@@ -1,26 +1,145 @@
 @model SES.Models.ViewModels.EnrollmentIndexVm
+@if (User.IsInRole("Student"))
+{
+ <style>
+    .student-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-bottom: 3px solid #4c63d2;
+    }
+    .student-brand {
+        font-weight: 700;
+        font-size: 1.5rem;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    .student-nav-link {
+        font-weight: 500;
+        padding: 0.8rem 1.2rem !important;
+        margin: 0 0.2rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    .student-nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-1px);
+    }
+    .student-nav-link.active {
+        background-color: rgba(255, 255, 255, 0.2);
+        font-weight: 600;
+    }
+    .profile-badge {
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 25px;
+        padding: 0.4rem 1rem;
+        backdrop-filter: blur(10px);
+    }
+    .student-icon {
+        margin-right: 0.5rem;
+        font-size: 1.1rem;
+    }
+    @@media (max-width: 768px) {
+        .student-brand { font-size: 1.2rem; }
+        .student-nav-link { padding: 0.6rem 1rem !important; }
+    }
+</style>
 
+    <nav class="navbar navbar-expand-lg navbar-dark student-header mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand student-brand d-flex align-items-center" 
+               asp-controller="Students" asp-action="Profile" asp-route-id="@User.FindFirst("StudentId")?.Value">
+                <i class="fas fa-graduation-cap student-icon"></i>
+                <span class="d-none d-sm-inline">Student Portal</span>
+                <span class="d-sm-none">Portal</span>
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#studentNavigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="studentNavigation">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link student-nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Profile" ? "active" : "")" 
+                           asp-controller="Students" asp-action="Profile" asp-route-id="@User.FindFirst("StudentId")?.Value">
+                            <i class="fas fa-user student-icon"></i>Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link student-nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Enrollments" ? "active" : "")" 
+                           asp-controller="Enrollments" asp-action="Index">
+                            <i class="fas fa-book-open student-icon"></i>Enrollments
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="navbar-nav">
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle profile-badge d-flex align-items-center" 
+                           href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle student-icon"></i>
+                            <span class="d-none d-md-inline">@User.Identity.Name</span>
+                            <span class="d-md-none">Menu</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" style="border-radius: 12px;">
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center py-2" 
+                                   asp-controller="Students" asp-action="Profile" asp-route-id="@User.FindFirst("StudentId")?.Value">
+                                    <i class="fas fa-id-card me-3 text-primary"></i>
+                                    <div>
+                                        <div class="fw-semibold">My Profile</div>
+                                        <small class="text-muted">View your details</small>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center py-2" 
+                                   asp-controller="Enrollments" asp-action="Index">
+                                    <i class="fas fa-calendar-alt me-3 text-success"></i>
+                                    <div>
+                                        <div class="fw-semibold">My Courses</div>
+                                        <small class="text-muted">Manage enrollments</small>
+                                    </div>
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center py-2 text-danger" 
+                                   asp-controller="Account" asp-action="Logout">
+                                    <i class="fas fa-sign-out-alt me-3"></i>
+                                    <div class="fw-semibold">Logout</div>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+}
 <h2>Enrollments</h2>
 <table class="table">
     <thead>
-        <tr><th>Student</th><th>Course</th><th>Grade</th><th>Enrolled</th><th></th></tr>
+        <tr><th>Course</th><th>Credits</th><th>Department</th><th>Grade</th><th>Enrolled</th><th></th></tr>
     </thead>
     <tbody>
         @foreach (var e in Model.Enrollments)
         {
             <tr data-enrollment-id="@e.Id">
-                <td>@e.Student.LastName, @e.Student.FirstName</td>
-                <td>@e.Course.Title (@e.Course.Credits cr)</td>
+                <td>@e.Course.Title</td>
+                <td>@e.Course.Credits</td>
+                <td>@e.Course.Department</td>
                 <td>@(e.Grade.HasValue ? e.Grade.Value.ToString("0.0") : "-")</td>
                 <td>@e.EnrolledOn.ToShortDateString()</td>
                 <td>
-                    <a asp-action="Grade" asp-route-id="@e.Id" class="btn btn-sm btn-secondary">Grade</a>
+                
                     @if (!e.Grade.HasValue)
                     {
                         <button class="btn btn-sm btn-danger unenroll-btn" 
                                 data-course-id="@e.Course.Id" 
                                 data-course-title="@e.Course.Title">
-                            Unenroll
+                            Drop
                         </button>
                     }
                 </td>
@@ -32,7 +151,7 @@
 <h3>Available Courses for Enrollment</h3>
 <table class="table" id="coursesTable">
     <thead>
-        <tr><th>Title</th><th>Credits</th><th>Enrollment</th><th></th></tr>
+        <tr><th>Title</th><th>Credits</th><th>Department</th><th>Enrollment</th><th></th></tr>
     </thead>
     <tbody>
         @foreach (var c in Model.AvailableCourses)
@@ -40,6 +159,7 @@
             <tr data-course-id="@c.CourseId">
                 <td>@c.Title</td>
                 <td>@c.Credits</td>
+                <td>@c.Department</td>
                 <td>@c.EnrolledCount / @c.MaxStudents</td>
                 <td>
                     <button class="btn btn-primary enroll-btn" 
@@ -53,7 +173,6 @@
     </tbody>
 </table>
 
-<!-- Hidden form to generate antiforgery token -->
 <form method="post" asp-antiforgery="true" style="display:none">
     @Html.AntiForgeryToken()
 </form>
@@ -64,7 +183,6 @@
     const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
     const token = tokenInput ? tokenInput.value : null;
 
-    // Enroll functionality
     document.querySelectorAll('.enroll-btn').forEach(btn => {
         btn.addEventListener('click', async function () {
             const courseIdStr = this.getAttribute('data-course-id');

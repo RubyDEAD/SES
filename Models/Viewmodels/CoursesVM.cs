@@ -8,6 +8,7 @@ namespace SES.Models.ViewModels
         public string Title { get; set; } = string.Empty;
         public int Credits { get; set; }
         public int MaxStudents { get; set; }
+        public string Department { get; set; } = string.Empty;
         public int EnrolledCount { get; set; }
         public bool IsFull => EnrolledCount >= MaxStudents;
     }
@@ -16,7 +17,6 @@ namespace SES.Models.ViewModels
     {
         public List<CourseRowVm> Courses { get; set; } = new();
 
-        // Used by the inline create form in AdminIndex.cshtml
         public CourseEditVm NewCourse { get; set; } = new();
 
         public int TotalCourses => Courses.Count;
@@ -30,10 +30,31 @@ namespace SES.Models.ViewModels
         [Required, StringLength(100)]
         public string Title { get; set; } = string.Empty;
 
+        [Required, StringLength(100)]
+        public string Department { get; set; } = string.Empty;
+
         [Range(1, 30)]
         public int Credits { get; set; }
 
         [Range(1, 500)]
         public int MaxStudents { get; set; }
+    }
+
+    // 🔹 New ViewModel: one row per student in a course
+    public class StudentRowVm
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+    }
+
+    // 🔹 New ViewModel: course details + enrolled students
+    public class CourseStudentsVm
+    {
+        public int CourseId { get; set; }
+        public string CourseTitle { get; set; } = string.Empty;
+        public List<StudentRowVm> Students { get; set; } = new();
+
+        public int TotalStudents => Students.Count;
     }
 }

@@ -20,7 +20,6 @@ public class StudentsController : Controller
 
         if (student == null) return NotFound();
 
-        // Only allow the logged-in student to access their own profile
         var userStudentId = User.Claims.FirstOrDefault(c => c.Type == "StudentId")?.Value;
         if (userStudentId == null || userStudentId != id.ToString())
         {
@@ -39,8 +38,9 @@ public class StudentsController : Controller
                     CourseId = e.CourseId,
                     Title = e.Course.Title,
                     Credits = e.Course.Credits,
+                    Department = e.Course.Department,
                     Grade = e.Grade,
-                    EnrolledOn = e.EnrolledOn, // Add this line
+                    EnrolledOn = e.EnrolledOn, 
                     MaxStudents = e.Course.MaxEnrollies,
                     EnrolledCount = 0
                 })

@@ -34,6 +34,7 @@ public class EnrollmentsController : Controller
                 CourseId = c.Id,
                 Title = c.Title,
                 Credits = c.Credits,
+                Department = c.Department,
                 EnrolledCount = _db.Enrollments.Count(e => e.CourseId == c.Id),
                 MaxStudents = c.MaxEnrollies
             })
