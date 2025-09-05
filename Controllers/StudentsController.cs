@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SES.Data;
@@ -40,7 +41,7 @@ public class StudentsController : Controller
                     Credits = e.Course.Credits,
                     Department = e.Course.Department,
                     Grade = e.Grade,
-                    EnrolledOn = e.EnrolledOn, 
+                    EnrolledOn = e.EnrolledOn,
                     MaxStudents = e.Course.MaxEnrollies,
                     EnrolledCount = 0
                 })
@@ -49,4 +50,6 @@ public class StudentsController : Controller
 
         return View(vm);
     }
+
+
 }

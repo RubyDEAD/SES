@@ -3,36 +3,40 @@
     ViewData["Title"] = "Login";
 }
 
-<h2 class="mb-3">Login</h2>
+<div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="card shadow-lg border-0 rounded-3" style="max-width: 400px; width: 100%;">
+        <div class="card-body p-4">
+            <h3 class="text-center mb-4 fw-bold text-primary">School Portal</h3>
 
-<form asp-controller="Users" asp-action="Login" method="post" class="needs-validation" novalidate>
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <form asp-controller="Users" asp-action="Login" method="post" class="needs-validation" novalidate>
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
 
-    <div class="mb-3">
-        <label asp-for="Email" class="form-label"></label>
-        <input asp-for="Email" class="form-control" autocomplete="username" />
-        <span asp-validation-for="Email" class="text-danger"></span>
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label fw-semibold"></label>
+                    <input asp-for="Email" class="form-control rounded-pill" autocomplete="username" placeholder="Enter your email" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label fw-semibold"></label>
+                    <input asp-for="Password" class="form-control rounded-pill" autocomplete="current-password" placeholder="Enter your password" />
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+
+
+
+                <button type="submit" class="btn btn-primary w-100 rounded-pill">Sign In</button>
+
+                <p class="text-center mt-3 mb-0">
+                    Don’t have an account? 
+                    <a asp-controller="Users" asp-action="Register" class="text-decoration-none fw-semibold text-primary">
+                        Register
+                    </a>
+                </p>
+            </form>
+        </div>
     </div>
-
-    <div class="mb-3">
-        <label asp-for="Password" class="form-label"></label>
-        <input asp-for="Password" class="form-control" autocomplete="current-password" />
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
-
-    <div class="form-check mb-3">
-        <input asp-for="RememberMe" class="form-check-input" />
-        <label asp-for="RememberMe" class="form-check-label"></label>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Sign in</button>
-    <p class="mt-3">
-    <a asp-controller="Users" asp-action="Register">Create an account</a>
-</p>
-
-</form>
-
-
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

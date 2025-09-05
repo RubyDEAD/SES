@@ -27,7 +27,6 @@ public class UsersController : Controller
             return View(vm);
         }
 
-        // Sign-in with claims
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -35,14 +34,17 @@ public class UsersController : Controller
             new Claim("StudentId", user.StudentId?.ToString() ?? ""),
             new Claim(ClaimTypes.Role, user.Role.ToString())
         };
+
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);
+
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
         if (user.Role == UserRole.Admin)
         {
             return RedirectToAction("AdminIndex", "Courses");
         }
+
         return RedirectToAction("Profile", "Students", new { id = user.StudentId });
     }
 
@@ -62,6 +64,14 @@ public class UsersController : Controller
             return View(vm);
         }
 
+        return RedirectToAction(nameof(Login));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Logout()
+    {
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return RedirectToAction(nameof(Login));
     }
 }

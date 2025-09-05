@@ -64,11 +64,12 @@
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item d-flex align-items-center py-2 text-danger" 
-                                   asp-controller="Account" asp-action="Logout">
-                                    <i class="fas fa-sign-out-alt me-3"></i>
-                                    <div class="fw-semibold">Logout</div>
-                                </a>
+                                <form asp-controller="Users" asp-action="Logout" method="post" class="d-inline">
+                                <button type="submit" class="dropdown-item d-flex align-items-center py-2 text-danger">
+                                <i class="fas fa-sign-out-alt me-3"></i>
+                                <div class="fw-semibold">Logout</div>
+                                </button>
+                                </form>
                             </li>
                         </ul>
                     </div>
